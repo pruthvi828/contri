@@ -1,0 +1,22 @@
+name: Auto Commit Streak
+
+on:
+  schedule:
+    - cron: '0 2 * * *' # Runs every day at 02:00 UTC (adjust time if needed)
+  workflow_dispatch: # Allows you to run it manually from the Actions tab to test
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Update daily log
+        run: |
+          date -u >> daily-log.txt
+          git config --global user.name "GitHub Actions Bot"
+          git config --global user.email "actions@github.com"
+          git add daily-log.txt
+          git commit -m "chore: automated daily contribution"
+          git push
