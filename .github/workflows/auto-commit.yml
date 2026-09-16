@@ -1,0 +1,37 @@
+name: Daily Safe Activity Sync
+
+on:
+  schedule:
+    # Runs daily at 14:30 UTC (~8:00 PM IST)
+    - cron: '30 14 * * *'
+  workflow_dispatch: # Allows manual trigger anytime from GitHub Actions tab
+
+permissions:
+  contents: write
+
+jobs:
+  daily-commit:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - name: Configure Git Identity (Attributed to your account)
+        run: |
+          git config --global user.name "pruthvi828"
+          git config --global user.email "jadhavpruthvi828@gmail.com"
+
+      - name: Run Dynamic Contribution Engine
+        run: |
+          python daily_contribute.py
+
+      - name: Push Commits to GitHub
+        run: |
+          git push origin main
