@@ -2,36 +2,40 @@ name: Daily Safe Activity Sync
 
 on:
   schedule:
-    # Runs daily at 14:30 UTC (~8:00 PM IST)
-    - cron: '30 14 * * *'
+    # Runs once daily around 14:45 UTC (~8:15 PM IST)
+    - cron: '45 14 * * *'
   workflow_dispatch: # Allows manual trigger anytime from GitHub Actions tab
 
 permissions:
   contents: write
 
 jobs:
-  daily-commit:
+  safe-sync:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 0
 
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.x'
+          python-version: '3.11'
 
-      - name: Configure Git Identity (Attributed to your account)
+      - name: Configure Git Identity
         run: |
           git config --global user.name "pruthvi828"
           git config --global user.email "jadhavpruthvi828@gmail.com"
 
-      - name: Run Dynamic Contribution Engine
+      - name: Dynamic Anti-Detection Delay
         run: |
-          python daily_contribute.py
+          # Random jitter between 0 and 20 minutes to avoid fixed-minute bot signatures
+          DELAY=$((RANDOM % 1200))
+          echo "Applying dynamic jitter delay of ${DELAY}s..."
+          sleep $DELAY
 
-      - name: Push Commits to GitHub
+      - name: Execute Safe Activity Engine
         run: |
-          git push origin main
+          python safe_engine.py --auto
