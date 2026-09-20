@@ -62,34 +62,45 @@ COMMIT_MESSAGES = [
     "update: periodic maintenance and state synchronization"
 ]
 
-# GitHub Contribution Heatmap Intensity Tiers
+# GitHub Contribution Heatmap Intensity Tiers (Boosted for vivid green variation)
 INTENSITY_TIERS = {
-    1: (1, 2),    # Level 1: Light Green
-    2: (3, 5),    # Level 2: Medium Green
-    3: (6, 8),    # Level 3: Deep Green
-    4: (9, 12)    # Level 4: Darkest Green (Sprint / Heavy Activity)
+    1: (2, 4),     # Level 1: Light Green (base 2 - 4 commits)
+    2: (5, 9),     # Level 2: Medium Green (base 5 - 9 commits)
+    3: (10, 16),   # Level 3: Deep Green (base 10 - 16 commits)
+    4: (17, 24)    # Level 4: Darkest Green (Sprint / Heavy Activity: base 17 - 24)
 }
+
+# Maximum daily commit ceiling to guarantee account safety & prevent API throttles
+MAX_DAILY_COMMIT_CAP = 28
 
 
 def get_daily_intensity(is_weekend=False):
     """
-    Computes a realistic commit target based on day of week and weighted tiers.
+    Computes a realistic commit target with dynamic -50% to +100% random swing.
+    - Weekend bias: more rest or lighter activity.
+    - Weekday bias: active development across all tiers.
+    - Random swing: scales base count by 0.5x to 2.0x (-50% to +100%).
     """
     if is_weekend:
         # Weekends: higher chance of rest (0) or light work (Tier 1)
-        # Weights: [Rest (0): 35%, Tier 1: 45%, Tier 2: 15%, Tier 3: 5%, Tier 4: 0%]
-        weights = [0.35, 0.45, 0.15, 0.05, 0.00]
+        weights = [0.25, 0.45, 0.20, 0.08, 0.02]
     else:
         # Weekdays: active development across all tiers
-        # Weights: [Rest (0): 10%, Tier 1: 35%, Tier 2: 35%, Tier 3: 15%, Tier 4: 5%]
-        weights = [0.10, 0.35, 0.35, 0.15, 0.05]
+        weights = [0.08, 0.32, 0.35, 0.17, 0.08]
 
     tier_choice = random.choices([0, 1, 2, 3, 4], weights=weights)[0]
     if tier_choice == 0:
-        return 0, 0  # Rest day
+        return 0, 0, 1.0  # Rest day
 
     min_c, max_c = INTENSITY_TIERS[tier_choice]
-    return tier_choice, random.randint(min_c, max_c)
+    base_count = random.randint(min_c, max_c)
+
+    # Dynamic random swing: 0.5x (-50%) to 2.0x (+100%)
+    swing_factor = random.uniform(0.50, 2.00)
+    final_count = max(1, round(base_count * swing_factor))
+    final_count = min(final_count, MAX_DAILY_COMMIT_CAP)
+
+    return tier_choice, final_count, swing_factor
 
 
 def generate_realistic_time(target_date):
@@ -200,10 +211,10 @@ def run_daily_activity(force=False):
         print("  Skipping automated run to prevent duplicate spam and keep activity organic.")
         return
 
-    tier, commit_count = get_daily_intensity(is_weekend)
+    tier, commit_count, swing_factor = get_daily_intensity(is_weekend)
 
     if force and commit_count == 0:
-        tier, commit_count = 1, random.randint(1, 3)
+        tier, commit_count, swing_factor = 1, random.randint(2, 5), 1.0
 
     if commit_count == 0:
         print("🌱 Today is a scheduled natural rest day (0 commits).")
@@ -216,7 +227,8 @@ def run_daily_activity(force=False):
         3: "Tier 3 (Deep Green)",
         4: "Tier 4 (Darkest Green - Sprint)"
     }
-    print(f"🎯 Target today: {commit_count} commits [{tier_labels.get(tier, 'Custom')}]")
+    swing_pct = f"{(swing_factor - 1.0) * 100:+.0f}%"
+    print(f"🎯 Target today: {commit_count} commits [{tier_labels.get(tier, 'Custom')} | swing: {swing_pct}]")
 
     # Generate spaced daytime timestamps in chronological order
     timestamps = [generate_realistic_time(today) for _ in range(commit_count)]
@@ -227,28 +239,34 @@ def run_daily_activity(force=False):
         time.sleep(0.3)
 
     git_push()
-    print(f"\n🎉 Successfully created {commit_count} commits with dynamic green intensity.")
+    print(f"\n🎉 Successfully created {commit_count} commits with dynamic green intensity ({swing_pct} swing).")
 
 
 def dry_run_simulation(days=100):
-    """Simulates activity distribution over N days to verify color variance."""
-    print(f"\n--- Simulation: 100 Days of Activity Distribution ---")
+    """Simulates activity distribution over N days to verify color variance & swings."""
+    print(f"\n--- Simulation: 100 Days of Activity Distribution with -50% to +100% Random Swings ---")
     counts = {0: 0, 1: 0, 2: 0, 3: 0, 4: 0}
     total_commits = 0
+    min_commit = 999
+    max_commit = 0
 
     for day in range(days):
         is_wknd = (day % 7) in [5, 6]
-        tier, c = get_daily_intensity(is_wknd)
+        tier, c, swing = get_daily_intensity(is_wknd)
         counts[tier] += 1
         total_commits += c
+        if c > 0:
+            min_commit = min(min_commit, c)
+            max_commit = max(max_commit, c)
 
     print(f"Total simulated commits: {total_commits} (avg {total_commits/days:.1f}/day)")
+    print(f"Active day range: {min_commit} to {max_commit} commits")
     print(f"  Tier 0 (Rest / Gray):          {counts[0]}% of days")
-    print(f"  Tier 1 (Light Green 1-2):      {counts[1]}% of days")
-    print(f"  Tier 2 (Medium Green 3-5):     {counts[2]}% of days")
-    print(f"  Tier 3 (Deep Green 6-8):       {counts[3]}% of days")
-    print(f"  Tier 4 (Darkest Green 9-12):   {counts[4]}% of days")
-    print("----------------------------------------------------\n")
+    print(f"  Tier 1 (Light Green):          {counts[1]}% of days")
+    print(f"  Tier 2 (Medium Green):         {counts[2]}% of days")
+    print(f"  Tier 3 (Deep Green):           {counts[3]}% of days")
+    print(f"  Tier 4 (Darkest Green):        {counts[4]}% of days")
+    print("------------------------------------------------------------------------------------\n")
 
 
 if __name__ == "__main__":
