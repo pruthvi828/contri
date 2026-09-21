@@ -74,3 +74,4 @@
 [2026-09-21T19:03:41] docs: clarify API payload structures and return codes (#60) | session: c2850
 [2026-09-21T19:06:55] test: add boundary check assertions and regression tests (#61) | session: d96ae
 [2026-09-21T19:12:05] docs: update architecture notes and documentation (#62) | session: a18e7
+[2026-09-21T19:13:22] feat: add lightweight diagnostic helper function (#63) | session: 5fbab
