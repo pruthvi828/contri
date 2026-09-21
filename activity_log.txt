@@ -93,3 +93,4 @@
 [2026-09-21T21:55:38] test: expand test coverage for edge condition handlers (#79) | session: c138e
 [2026-09-21T22:08:06] feat: add lightweight diagnostic helper function (#80) | session: 721e2
 [2026-09-21T22:17:09] refactor: simplify conditional branching in data processor (#81) | session: cfc64
+[2026-09-21T22:18:14] docs: clarify API payload structures and return codes (#82) | session: 25393
