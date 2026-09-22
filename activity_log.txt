@@ -124,3 +124,4 @@
 [2026-09-22T13:04:56] docs: update architecture notes and documentation (#25) | session: 485a4
 [2026-09-22T13:09:54] chore: prune stale cache artifacts and temporary logs (#26) | session: 5face
 [2026-09-22T13:10:12] perf: cache expensive lookup computations (#27) | session: de965
+[2026-09-22T13:21:37] feat: add lightweight diagnostic helper function (#28) | session: 7064b
