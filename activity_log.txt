@@ -183,3 +183,4 @@
 [2026-09-22T20:43:42] style: normalize line formatting and remove trailing whitespace (#84) | session: ce29d
 [2026-09-22T20:46:26] style: normalize line formatting and remove trailing whitespace (#85) | session: 850a9
 [2026-09-22T20:47:55] docs: update architecture notes and documentation (#86) | session: 1c105
+[2026-09-22T20:49:43] fix: sanitize input boundaries for configuration parser (#87) | session: 49b4a
