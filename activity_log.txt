@@ -495,3 +495,4 @@
 [2026-09-26T12:43:00] fix: edge case handling in telemetry parser and validator (#18) | session: dd4be
 [2026-09-26T13:03:13] feat: modularize core utility helpers and routines (#19) | session: 1e9ce
 [2026-09-26T13:03:29] chore: prune stale cache artifacts and temporary logs (#20) | session: 8973b
+[2026-09-26T13:23:11] docs: clarify API payload structures and return codes (#21) | session: 30217
