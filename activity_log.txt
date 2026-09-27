@@ -550,3 +550,4 @@
 [2026-09-27T12:43:08] chore: prune stale cache artifacts and temporary logs (#20) | session: 6e6ee
 [2026-09-27T12:48:24] feat: add lightweight diagnostic helper function (#21) | session: efee7
 [2026-09-27T12:51:29] docs: clarify API payload structures and return codes (#22) | session: 56c2f
+[2026-09-27T13:00:15] docs: clarify API payload structures and return codes (#23) | session: 19066
