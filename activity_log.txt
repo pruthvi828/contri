@@ -577,3 +577,4 @@
 [2026-09-27T17:30:50] docs: clarify API payload structures and return codes (#47) | session: 4cfef
 [2026-09-27T17:33:49] docs: clarify API payload structures and return codes (#48) | session: 7fa4b
 [2026-09-27T18:04:12] update: periodic maintenance and state synchronization (#49) | session: 8b47a
+[2026-09-27T18:09:02] fix: edge case handling in telemetry parser and validator (#50) | session: 9c9d9
