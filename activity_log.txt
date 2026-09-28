@@ -612,3 +612,4 @@
 [2026-09-28T11:26:16] fix: edge case handling in telemetry parser and validator (#12) | session: 3093e
 [2026-09-28T11:44:20] fix: edge case handling in telemetry parser and validator (#13) | session: 486a7
 [2026-09-28T11:44:52] chore: dependency synchronization and environment audit (#14) | session: e7009
+[2026-09-28T12:05:05] docs: clarify API payload structures and return codes (#15) | session: 978dc
