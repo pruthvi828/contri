@@ -674,3 +674,4 @@
 [2026-09-29T10:31:15] ci: verify pipeline build configuration and test matrix (#11) | session: af6b2
 [2026-09-29T10:41:30] chore: dependency synchronization and environment audit (#12) | session: e1e9e
 [2026-09-29T10:46:40] feat: add lightweight diagnostic helper function (#13) | session: 1fa7c
+[2026-09-29T10:47:49] docs: clarify API payload structures and return codes (#14) | session: 3f90b
