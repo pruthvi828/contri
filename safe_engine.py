@@ -36,33 +36,28 @@ LOG_FILE = os.path.join(REPO_DIR, "activity_log.txt")
 GIT_USER_NAME = "pruthvi828"
 GIT_USER_EMAIL = "jadhavpruthvi828@gmail.com"
 
-# Realistic, high-quality engineering commit messages
+# Realistic, clean, general engineering commit messages (no specific project names or domains)
 COMMIT_MESSAGES = [
-    "refactor: optimize internal data structures and lookup tables",
-    "docs: update architecture notes and documentation",
-    "perf: optimize memory allocation in telemetry pipeline",
-    "chore: dependency synchronization and environment audit",
-    "fix: edge case handling in telemetry parser and validator",
-    "style: format codebase according to style guidelines",
-    "test: add boundary check assertions and regression tests",
-    "feat: modularize core utility helpers and routines",
-    "ci: verify pipeline build configuration and test matrix",
-    "update: synchronize daily metrics and telemetry checkpoint",
-    "refactor: simplify conditional branching in data processor",
-    "docs: clarify API payload structures and return codes",
-    "perf: cache expensive lookup computations",
-    "chore: prune stale cache artifacts and temporary logs",
-    "fix: sanitize input boundaries for configuration parser",
-    "style: normalize line formatting and remove trailing whitespace",
-    "test: expand test coverage for edge condition handlers",
-    "feat: add lightweight diagnostic helper function",
-    "perf: reduce runtime latency in serialization loop",
-    "update: periodic maintenance and state synchronization",
-    "refactor: extract reusable string utility routines",
-    "docs: add inline comments for async worker loops",
-    "fix: handle timeout gracefully on socket retry",
-    "chore: update build dependency versions and pin requirements",
-    "feat: add telemetry heartbeat verification check"
+    "docs: update documentation and notes",
+    "refactor: clean up code and formatting",
+    "chore: routine maintenance and updates",
+    "fix: minor bug fixes and improvements",
+    "perf: general performance optimizations",
+    "style: format code according to guidelines",
+    "test: update unit tests and assertions",
+    "update: daily progress checkpoint",
+    "feat: add utility helper routines",
+    "chore: update dependencies and environment config",
+    "docs: update README and usage notes",
+    "refactor: simplify internal logic and functions",
+    "style: remove trailing whitespace and format files",
+    "update: periodic maintenance and state sync",
+    "test: improve test coverage and edge cases",
+    "chore: prune stale cache and temporary files",
+    "docs: clarify code comments and examples",
+    "perf: optimize memory usage and execution loop",
+    "feat: add lightweight diagnostic helper",
+    "fix: handle boundary condition checks"
 ]
 
 # GitHub Contribution Tiers: (min_commits, max_commits)
