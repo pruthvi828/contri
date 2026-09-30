@@ -1,13 +1,13 @@
-# Activity & Telemetry Engine 🚀
+# Daily Engineering Journal 🚀
 
-A lightweight, automated developer telemetry and daily activity logging engine.
+A lightweight personal repository for recording daily development notes, learning checkpoints, code snippets, and maintenance updates.
 
 ## Overview
-This repository maintains automated engineering logs, benchmark checkpoints, and development progress tracking.
+This repository maintains daily progress checkpoints, general engineering notes, and routine maintenance logs.
 
 ### Features
-- **Dynamic Activity Logging**: Records structured daily progress checkpoints and maintenance logs.
-- **Idempotency Safeguards**: Prevents duplicate executions within a single calendar day.
+- **Daily Progress Logging**: Records structured daily progress checkpoints and maintenance updates.
+- **Organic Variance**: Natural activity distribution matching authentic developer work rhythms.
 - **Automated Synchronization**: Operates via GitHub Actions and local scheduler integration.
 
 ## Usage
