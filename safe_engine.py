@@ -1,26 +1,24 @@
 #!/usr/bin/env python3
 """
 ==============================================================================
-Safe GitHub Activity & Contribution Engine
+Safe Natural GitHub Contribution & Heatmap Engine
 Repository: pruthvi828/contri
 Author: pruthvi828 <jadhavpruthvi828@gmail.com>
 
-KEY DESIGN PRINCIPLES:
-1. Natural Daily Heatmap Variance:
-   GitHub divides contributions into 4 quartiles to render green colors.
-   This engine uses calibrated weights to distribute days across:
-   - Tier 0: Rest Day (0 commits, gray)       -> ~15-20% overall (higher on weekends)
-   - Tier 1: Light Green (1-2 commits)        -> ~35% of days
-   - Tier 2: Medium Green (3-5 commits)       -> ~30% of days
-   - Tier 3: Medium-Dark Green (6-8 commits)  -> ~12% of days
-   - Tier 4: Deepest Green (9-12 commits)     -> ~5% of days (Sprint days)
+NATURAL HEATMAP DESIGN:
+GitHub divides active days across 4 quartiles to render green shades:
+- Tier 0: Rest Day (0 commits, Gray)          -> ~15-20% overall (higher on weekends)
+- Tier 1: Light Green (1-2 commits, "Lil bit")-> ~35% of days
+- Tier 2: Medium Green (3-5 commits)          -> ~28% of days
+- Tier 3: Medium-Dark Green (6-8 commits)     -> ~12% of days
+- Tier 4: Deepest Green (9-14 commits, Sprint)-> ~10% of days
 
-2. Anti-Suspension & Bot Detection Prevention:
-   - Strictly human commit volume (capped at 12 max, typical 1-5).
-   - Day-spaced realistic author timestamps (between 09:15 and 22:45).
-   - Idempotency guard: Never double-commits if today already has activity.
-   - Unified Git identity: pruthvi828 <jadhavpruthvi828@gmail.com>.
-   - Clean UTF-8 structured log updates (no 0-byte or corrupted binary diffs).
+ANTI-DETECTION SAFEGUARDS:
+- Strictly organic volume (0 to 14 commits max).
+- Realistic daytime timestamps spread between 09:30 AM and 10:45 PM.
+- Chronologically sorted commits with natural spacing.
+- Idempotency guard: Skips duplicate runs unless --force is used.
+- Unified Git identity: pruthvi828 <jadhavpruthvi828@gmail.com>.
 ==============================================================================
 """
 
@@ -30,7 +28,7 @@ import json
 import random
 import subprocess
 import time
-from datetime import datetime
+from datetime import datetime, timedelta
 
 REPO_DIR = os.path.dirname(os.path.abspath(__file__))
 LOG_FILE = os.path.join(REPO_DIR, "activity_log.txt")
@@ -59,44 +57,86 @@ COMMIT_MESSAGES = [
     "test: expand test coverage for edge condition handlers",
     "feat: add lightweight diagnostic helper function",
     "perf: reduce runtime latency in serialization loop",
-    "update: periodic maintenance and state synchronization"
+    "update: periodic maintenance and state synchronization",
+    "refactor: extract reusable string utility routines",
+    "docs: add inline comments for async worker loops",
+    "fix: handle timeout gracefully on socket retry",
+    "chore: update build dependency versions and pin requirements",
+    "feat: add telemetry heartbeat verification check"
 ]
 
-# Daily Commit Intensity Range: 50 to 100 commits
-MIN_DAILY_COMMITS = 50
-MAX_DAILY_COMMITS = 100
+# GitHub Contribution Tiers: (min_commits, max_commits)
+HEATMAP_TIERS = {
+    0: (0, 0),    # Tier 0: Rest Day (0 commits, Gray / Empty)
+    1: (1, 2),    # Tier 1: Light Green ("Lil bit", 1-2 commits)
+    2: (3, 5),    # Tier 2: Medium Green (3-5 commits)
+    3: (6, 8),    # Tier 3: Medium-Dark Green (6-8 commits)
+    4: (9, 14)    # Tier 4: Full Dark Green (Sprint days, 9-14 commits)
+}
 
-# Whether to allow an occasional weekend rest day (set to False for guaranteed daily commits)
-ALLOW_WEEKEND_REST = False
+TIER_LABELS = {
+    0: "⬜ Rest Day (0 commits, Gray)",
+    1: "🟩 Lil Bit (1-2 commits, Light Green)",
+    2: "🟩 Medium (3-5 commits, Medium Green)",
+    3: "🟩 Dark (6-8 commits, Medium-Dark Green)",
+    4: "🟩 Full Dark Green (9-14 commits, Deepest Green)"
+}
 
 
 def get_daily_intensity(is_weekend=False):
     """
-    Generates high-intensity commit volume varying randomly between 50 and 100 commits.
-    - Weekdays: 50 to 100 commits (randomly fluctuating every day).
-    - Weekends: 50 to 80 commits (or rest if ALLOW_WEEKEND_REST is enabled).
+    Computes a realistic commit volume simulating real-world developer workflows.
+    - Weekdays: 10% rest, 32% light green, 32% medium green, 14% dark, 12% full dark green.
+    - Weekends: 35% rest, 40% light green, 15% medium green, 6% dark, 4% full dark green.
+    Returns: (tier_number, commit_count)
     """
-    if is_weekend and ALLOW_WEEKEND_REST:
-        if random.random() < 0.15:
-            return 0  # Rest day
-
     if is_weekend:
-        # Weekend range: 50 to 80 commits
-        return random.randint(MIN_DAILY_COMMITS, 80)
+        weights = [0.35, 0.40, 0.15, 0.06, 0.04]
     else:
-        # Weekday range: 50 to 100 commits
-        return random.randint(MIN_DAILY_COMMITS, MAX_DAILY_COMMITS)
+        weights = [0.10, 0.32, 0.32, 0.14, 0.12]
+
+    tier = random.choices([0, 1, 2, 3, 4], weights=weights)[0]
+    min_c, max_c = HEATMAP_TIERS[tier]
+    
+    if min_c == max_c:
+        return tier, min_c
+    return tier, random.randint(min_c, max_c)
 
 
-def generate_realistic_time(target_date):
+def generate_spaced_timestamps(target_date, count):
     """
-    Generates a natural daytime timestamp between 09:15 AM and 10:45 PM
-    with random minutes and seconds to avoid rigid clock patterns.
+    Generates `count` timestamps during realistic waking/working hours (09:30 to 22:45),
+    chronologically ordered with realistic random gaps (5 to 45 mins) between commits.
     """
-    hour = random.randint(9, 22)
-    minute = random.randint(0, 59)
-    second = random.randint(0, 59)
-    return target_date.replace(hour=hour, minute=minute, second=second)
+    if count == 0:
+        return []
+
+    # Working window: 09:30 AM (570 mins) to 10:45 PM (1365 mins) -> 795 minutes span
+    start_minute = random.randint(570, 660) # Between 09:30 and 11:00 AM
+    end_minute = random.randint(1260, 1365)  # Between 09:00 and 10:45 PM
+    
+    if count == 1:
+        minutes = [random.randint(start_minute, end_minute)]
+    else:
+        # Generate random distinct points within the window and sort
+        available_range = max(count * 5, end_minute - start_minute)
+        step = available_range / count
+        minutes = []
+        for i in range(count):
+            base = int(start_minute + i * step)
+            jitter = random.randint(-int(step * 0.3), int(step * 0.3))
+            minutes.append(max(540, min(1410, base + jitter)))
+        minutes.sort()
+
+    timestamps = []
+    base_midnight = target_date.replace(hour=0, minute=0, second=0, microsecond=0)
+    for m in minutes:
+        h = m // 60
+        mn = m % 60
+        sec = random.randint(0, 59)
+        timestamps.append(base_midnight.replace(hour=h, minute=mn, second=sec))
+
+    return timestamps
 
 
 def has_commits_today(target_date=None):
@@ -125,14 +165,17 @@ def has_commits_today(target_date=None):
 
 def ensure_git_identity():
     """Configures author and committer identity to match GitHub account."""
-    subprocess.run(["git", "config", "user.name", GIT_USER_NAME], cwd=REPO_DIR, check=True)
-    subprocess.run(["git", "config", "user.email", GIT_USER_EMAIL], cwd=REPO_DIR, check=True)
+    try:
+        subprocess.run(["git", "config", "user.name", GIT_USER_NAME], cwd=REPO_DIR, check=True)
+        subprocess.run(["git", "config", "user.email", GIT_USER_EMAIL], cwd=REPO_DIR, check=True)
+    except Exception:
+        pass
 
 
 def make_single_commit(commit_datetime, message=None, index=1):
     """
     Writes a clean, structured UTF-8 log line and creates a git commit
-    with the designated author date.
+    with matching author and committer dates.
     """
     if not message:
         base_msg = random.choice(COMMIT_MESSAGES)
@@ -142,7 +185,7 @@ def make_single_commit(commit_datetime, message=None, index=1):
     session_id = f"{random.randint(100000, 999999):x}"
     log_entry = f"[{date_str}] {message} | session: {session_id}\n"
 
-    # Ensure log file directory exists and write clean UTF-8
+    # Append to activity log
     with open(LOG_FILE, "a", encoding="utf-8") as f:
         f.write(log_entry)
 
@@ -180,68 +223,82 @@ def git_push():
 
 
 def run_daily_activity(force=False):
-    """Main daily routine."""
+    """Main daily routine executed by GitHub Actions or local scheduler."""
     today = datetime.now()
     is_weekend = today.weekday() in [5, 6]
 
-    print("=" * 60)
-    print(f" Safe GitHub Activity Engine: {today.strftime('%A, %d %B %Y')}")
-    print("=" * 60)
+    print("=" * 65)
+    print(f" Natural GitHub Contribution Engine: {today.strftime('%A, %d %B %Y')}")
+    print("=" * 65)
 
     ensure_git_identity()
 
     existing_count = has_commits_today(today)
     if existing_count > 0 and not force:
         print(f"ℹ Today already has {existing_count} commit(s) in the repository.")
-        print("  Skipping automated run to prevent duplicate spam and keep activity organic.")
+        print("  Skipping automated run to maintain organic spacing and prevent spam.")
         return
 
-    commit_count = get_daily_intensity(is_weekend)
+    tier, commit_count = get_daily_intensity(is_weekend)
 
     if force and commit_count == 0:
-        commit_count = random.randint(MIN_DAILY_COMMITS, 75)
+        # In force mode, ensure at least a light or medium commit
+        tier = random.choice([1, 2, 4])
+        commit_count = random.randint(*HEATMAP_TIERS[tier])
 
     if commit_count == 0:
-        print("🌱 Today is a scheduled natural rest day (0 commits).")
-        print("   Rest days simulate authentic developer behavior and prevent robot detection.")
+        print("🌱 Today is a natural REST DAY (0 commits).")
+        print("   Simulates genuine human rest, leaving a gray square on GitHub heatmap.")
         return
 
-    print(f"🎯 Target today: {commit_count} commits (High Intensity Range: 50–100 commits)")
+    print(f"🎯 Scheduled Intensity: Tier {tier} -> {TIER_LABELS[tier]}")
+    print(f"   Executing {commit_count} natural commit(s)...")
 
-    # Generate spaced daytime timestamps in chronological order
-    timestamps = [generate_realistic_time(today) for _ in range(commit_count)]
-    timestamps.sort()
+    # Generate chronologically spaced daytime timestamps
+    timestamps = generate_spaced_timestamps(today, commit_count)
 
     for idx, ts in enumerate(timestamps, 1):
         make_single_commit(ts, index=idx)
-        time.sleep(0.01)
+        time.sleep(0.02)
 
     git_push()
-    print(f"\n🎉 Successfully created {commit_count} commits with high-velocity green intensity.")
+    print(f"\n🎉 Successfully created {commit_count} commits across {TIER_LABELS[tier]}.")
 
 
 def dry_run_simulation(days=100):
-    """Simulates activity distribution over N days with 50-100 commit range."""
-    print(f"\n--- Simulation: 100 Days of High-Intensity Activity (50 - 100 Commits/Day) ---")
+    """Simulates activity distribution over N days to visualize the natural heatmap breakdown."""
+    print(f"\n=================================================================")
+    print(f" SIMULATION: {days} Days of Natural GitHub Activity Distribution")
+    print(f"=================================================================")
+    
+    tier_counts = {0: 0, 1: 0, 2: 0, 3: 0, 4: 0}
     total_commits = 0
-    min_commit = 999
-    max_commit = 0
-    zero_days = 0
+    calendar_grid = []
 
     for day in range(days):
         is_wknd = (day % 7) in [5, 6]
-        c = get_daily_intensity(is_wknd)
+        tier, c = get_daily_intensity(is_wknd)
+        tier_counts[tier] += 1
         total_commits += c
-        if c == 0:
-            zero_days += 1
-        else:
-            min_commit = min(min_commit, c)
-            max_commit = max(max_commit, c)
+        
+        # Grid representation (white=gray, green gradients)
+        symbols = {0: "⬜", 1: "🟩", 2: "🟩", 3: "🟩", 4: "🟩"}
+        calendar_grid.append(symbols[tier])
 
-    print(f"Total simulated commits: {total_commits} (avg {total_commits/days:.1f}/day)")
-    print(f"Active day range: {min_commit} to {max_commit} commits")
-    print(f"Rest days: {zero_days} days ({zero_days/days*100:.0f}%)")
-    print("------------------------------------------------------------------------------------\n")
+    print("\nVisual Heatmap Calendar Preview (7 days per row):")
+    for i in range(0, len(calendar_grid), 7):
+        print(" ".join(calendar_grid[i:i+7]))
+
+    print("\nDistribution Breakdown:")
+    print("-" * 65)
+    for t in range(5):
+        pct = (tier_counts[t] / days) * 100
+        print(f"  Tier {t}: {TIER_LABELS[t]:<45} | {tier_counts[t]:>3} days ({pct:>4.1f}%)")
+    print("-" * 65)
+    print(f"Total simulated commits: {total_commits}")
+    print(f"Average commits per day: {total_commits / days:.2f} commits/day")
+    print(f"Active days: {days - tier_counts[0]} / {days} ({(days - tier_counts[0])/days*100:.1f}%)")
+    print("=================================================================\n")
 
 
 if __name__ == "__main__":
@@ -253,18 +310,21 @@ if __name__ == "__main__":
         elif arg in ["--force", "-f"]:
             run_daily_activity(force=True)
             sys.exit(0)
-        elif arg in ["--dry-run", "--sim"]:
-            dry_run_simulation(100)
+        elif arg in ["--dry-run", "--sim", "-s"]:
+            days = 100
+            if len(sys.argv) > 2 and sys.argv[2].isdigit():
+                days = int(sys.argv[2])
+            dry_run_simulation(days)
             sys.exit(0)
-        elif arg in ["--status", "-s"]:
+        elif arg in ["--status"]:
             today = datetime.now()
             count = has_commits_today(today)
             print(f"Today ({today.strftime('%Y-%m-%d')}): {count} commit(s) recorded.")
             sys.exit(0)
 
-    print("\n--- GitHub Safe Contribution Engine ---")
+    print("\n--- GitHub Natural Contribution Engine ---")
     print("1. Run Daily Activity (Natural intensity)")
-    print("2. Force Run Today (Bypass rest day / existing check)")
+    print("2. Force Run Today (Guarantees commits)")
     print("3. Run 100-Day Distribution Simulation (Dry run)")
     print("4. Check Today's Status")
     print("5. Exit")
