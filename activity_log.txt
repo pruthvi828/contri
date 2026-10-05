@@ -725,3 +725,4 @@
 [2026-10-05T16:05:40] test: improve test coverage and edge cases (#5) | session: 763d9
 [2026-10-05T17:02:18] test: improve test coverage and edge cases (#6) | session: bcf37
 [2026-10-05T18:10:02] chore: routine maintenance and updates (#7) | session: 21a68
+[2026-10-05T19:24:00] feat: add lightweight diagnostic helper (#8) | session: b1ae2
