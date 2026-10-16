@@ -758,3 +758,4 @@
 [2026-10-15T18:12:29] chore: update dependencies and environment config (#1) | session: dfcd2
 [2026-10-16T09:15:05] update: periodic maintenance and state sync (#1) | session: 3d76e
 [2026-10-16T13:40:59] perf: optimize memory usage and execution loop (#2) | session: 3a404
+[2026-10-16T16:02:48] docs: update README and usage notes (#3) | session: b4e51
