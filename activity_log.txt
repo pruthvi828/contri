@@ -822,3 +822,4 @@
 [2026-11-04T14:33:17] fix: handle boundary condition checks (#3) | session: 7f94f
 [2026-11-04T18:03:18] style: format code according to guidelines (#4) | session: 34177
 [2026-11-04T20:12:27] docs: update README and usage notes (#5) | session: 1cfd3
+[2026-11-05T10:45:56] docs: clarify code comments and examples (#1) | session: 658b1
