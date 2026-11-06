@@ -831,3 +831,4 @@
 [2026-11-05T19:02:57] refactor: clean up code and formatting (#7) | session: 4717b
 [2026-11-05T19:59:22] docs: update documentation and notes (#8) | session: b23a1
 [2026-11-05T21:12:10] fix: minor bug fixes and improvements (#9) | session: 42518
+[2026-11-06T10:07:22] feat: add utility helper routines (#1) | session: 3bf74
